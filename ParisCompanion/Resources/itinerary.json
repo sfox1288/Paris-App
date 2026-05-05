@@ -1,0 +1,28 @@
+[
+  {
+    "date": "2026-06-15",
+    "title": "Arrival + Île de la Cité",
+    "notes": "Easy day. Beat jet lag with a long walk.",
+    "stops": [
+      { "poiId": "notre-dame", "plannedTime": "14:00", "note": "Exterior — restoration ongoing" },
+      { "poiId": "sainte-chapelle", "plannedTime": "15:30", "note": "Pre-booked entry" }
+    ]
+  },
+  {
+    "date": "2026-06-16",
+    "title": "Louvre Day",
+    "notes": "Get there at opening to beat the crowds.",
+    "stops": [
+      { "poiId": "louvre", "plannedTime": "09:00", "note": "Pyramid entrance — pre-booked" }
+    ]
+  },
+  {
+    "date": "2026-06-17",
+    "title": "Orsay + Eiffel",
+    "notes": null,
+    "stops": [
+      { "poiId": "musee-orsay", "plannedTime": "10:00", "note": null },
+      { "poiId": "eiffel-tower", "plannedTime": "16:00", "note": "Sunset views from Trocadéro" }
+    ]
+  }
+]
