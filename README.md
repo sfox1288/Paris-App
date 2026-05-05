@@ -49,12 +49,12 @@ ParisCompanion/
 
 ## Build phases
 
-- [x] **Phase 1 — Skeleton + data.** Project scaffold, models, ContentStore loads 5 hand-coded POIs, Browse list confirms load. ← **you are here**
-- [ ] **Phase 2 — POI Detail.** Practical info box, Markdown-rendered Rick Steves text, Google Maps directions button, favorite/visited toggle.
-- [ ] **Phase 3 — Map + Browse.** MapKit pin view with category filter and tap-to-sheet. Browse polish.
-- [ ] **Phase 4 — Itinerary.** Today view with date logic; full itinerary with expandable days.
+- [x] **Phase 1 — Skeleton + data.** Project scaffold, models, ContentStore loads 5 hand-coded POIs, Browse list confirms load.
+- [x] **Phase 2 — POI Detail.** Practical info box, Markdown-rendered Rick Steves text, Google Maps directions button, favorite/visited toggle.
+- [x] **Phase 3 — Map + Browse.** MapKit pin view with category filter and tap-to-sheet.
+- [x] **Phase 4 — Itinerary.** Today view with date logic; full itinerary with expandable days. ← **you are here**
 - [ ] **Phase 5 — Real content.** Replace the 5 placeholder POIs with the full set; ingest Rick Steves text.
-- [ ] **Phase 6 — Polish + TestFlight.** App icon, launch screen, empty/error states, device test in airplane mode, upload to TestFlight.
+- [ ] **Phase 6 — Polish + TestFlight.** App icon, launch screen, device test in airplane mode, upload to TestFlight.
 
 ## Editing content
 
