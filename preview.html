@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Paris Companion — Preview</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" integrity="sha512-h9FcoyWjHcOcmEVkxOfTLnmZFWIH0iZhZT1H2TbOq55xssQGEJHEaIm+PgoUaZbRvQTNTluNOEfb1ZRy6D3BOw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<style>
+  :root {
+    --bg: #f2f2f7;
+    --card: #ffffff;
+    --text: #1c1c1e;
+    --muted: #6b6b70;
+    --accent: #0a84ff;
+    --pink: #ff375f;
+    --green: #30d158;
+    --border: #e5e5ea;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #d8d8df; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif; color: var(--text); }
+  body { display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .phone {
+    width: 390px; height: 844px;
+    background: var(--bg);
+    border-radius: 44px;
+    border: 12px solid #1c1c1e;
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+    box-shadow: 0 24px 60px rgba(0,0,0,.25);
+  }
+  .notch {
+    position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+    width: 130px; height: 28px;
+    background: #1c1c1e; border-radius: 0 0 18px 18px;
+    z-index: 50;
+  }
+  .nav {
+    padding: 36px 16px 8px; background: rgba(242,242,247,.85);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border); position: relative; z-index: 10;
+  }
+  .nav h1 { font-size: 28px; margin: 0; font-weight: 700; }
+  .nav .small { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .body {
+    flex: 1; overflow: auto; padding: 16px;
+  }
+  .tabbar {
+    display: flex; border-top: 1px solid var(--border);
+    background: rgba(242,242,247,.85);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    height: 70px;
+  }
+  .tab {
+    flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: var(--muted); cursor: pointer; gap: 2px; font-size: 11px;
+    user-select: none;
+  }
+  .tab.active { color: var(--accent); }
+  .tab svg { width: 24px; height: 24px; }
+  .card {
+    background: var(--card); border-radius: 14px; padding: 14px;
+    margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  .stop {
+    display: flex; gap: 12px; padding: 12px;
+    background: #fafafd; border-radius: 12px;
+    margin-top: 8px; cursor: pointer;
+    border: 1px solid var(--border);
+  }
+  .stop .time { width: 50px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .stop .body-text { flex: 1; }
+  .stop .body-text h4 { margin: 0 0 2px; font-size: 16px; }
+  .stop .body-text .sub { font-size: 12px; color: var(--muted); }
+  .stop .body-text .note { font-size: 14px; margin-top: 4px; }
+  .stop .chev { color: #c4c4cc; align-self: center; }
+  .row {
+    display: flex; align-items: center; gap: 12px; padding: 12px;
+    border-bottom: 1px solid var(--border); cursor: pointer;
+    background: var(--card);
+  }
+  .row:last-child { border-bottom: none; }
+  .row .icon { width: 28px; color: var(--accent); display: flex; justify-content: center; }
+  .row .name { flex: 1; }
+  .row .name h4 { margin: 0; font-size: 15px; font-weight: 500; }
+  .row .name .cat { font-size: 12px; color: var(--muted); }
+  .row .indicators { display: flex; gap: 8px; }
+  .heart { color: var(--pink); }
+  .check { color: var(--green); }
+  .section-list { background: var(--card); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+  .section-title { font-size: 12px; color: var(--muted); padding: 14px 4px 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .search {
+    width: 100%; padding: 10px 14px; border-radius: 10px;
+    border: none; background: rgba(118,118,128,.12);
+    font-size: 16px; margin-bottom: 14px; outline: none;
+  }
+  .filter-bar {
+    display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px;
+    scrollbar-width: none;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .chip {
+    flex: 0 0 auto; padding: 6px 12px; border-radius: 100px;
+    background: rgba(118,118,128,.12); font-size: 12px; cursor: pointer;
+    display: flex; align-items: center; gap: 4px; user-select: none;
+    border: none;
+  }
+  .chip.on { background: rgba(10,132,255,.18); color: var(--accent); }
+  .map-container { height: 100%; min-height: 400px; border-radius: 0; }
+  #leafletMap { width: 100%; height: 100%; min-height: 400px; }
+  .empty {
+    text-align: center; padding: 60px 16px; color: var(--muted);
+  }
+  .empty svg { width: 48px; height: 48px; margin-bottom: 12px; }
+  .empty h2 { margin: 0 0 8px; font-weight: 600; color: var(--text); }
+  .hero {
+    height: 180px; border-radius: 16px;
+    background: linear-gradient(135deg, rgba(10,132,255,.55), rgba(175,82,222,.45));
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(255,255,255,.9); margin-bottom: 16px;
+  }
+  .hero svg { width: 56px; height: 56px; }
+  .practical {
+    background: rgba(118,118,128,.08); border-radius: 12px; padding: 14px;
+  }
+  .practical .pr { display: flex; gap: 10px; align-items: flex-start; padding: 4px 0; }
+  .practical .pr svg { width: 18px; flex: 0 0 auto; margin-top: 2px; color: var(--muted); }
+  .practical .pr-label { font-size: 11px; color: var(--muted); }
+  .practical .pr-value { font-size: 14px; }
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 12px; border-radius: 12px; cursor: pointer;
+    font-size: 16px; font-weight: 500; border: none; width: 100%;
+  }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-bordered { background: rgba(118,118,128,.12); color: var(--text); }
+  .btn-bordered.fav-on { color: var(--pink); }
+  .btn-bordered.vis-on { color: var(--green); }
+  .toggles { display: flex; gap: 8px; margin: 12px 0; }
+  .toggles .btn { padding: 10px; font-size: 14px; }
+  .rs h3 { margin: 16px 0 6px; font-size: 17px; }
+  .rs p { margin: 0 0 10px; line-height: 1.5; }
+  .mini-map { height: 200px; border-radius: 12px; overflow: hidden; margin: 14px 0; }
+  .back {
+    background: none; border: none; color: var(--accent); padding: 0;
+    font-size: 17px; cursor: pointer; display: flex; align-items: center; gap: 4px;
+  }
+  .disclosure { cursor: pointer; }
+  .disclosure-head { display: flex; justify-content: space-between; align-items: flex-start; }
+  .disclosure-head .arrow { color: var(--muted); transition: transform .2s; }
+  .disclosure.open .arrow { transform: rotate(90deg); }
+  .disclosure-body { display: none; margin-top: 10px; }
+  .disclosure.open .disclosure-body { display: block; }
+  .header-pre {
+    text-align: center; padding: 32px 16px; color: var(--text);
+  }
+  .header-pre svg { width: 48px; height: 48px; color: var(--accent); }
+  .header-pre h2 { margin: 8px 0 4px; }
+  .header-pre p { margin: 0; color: var(--muted); }
+  .leaflet-popup-content { font-family: inherit; }
+  .leaflet-popup-content button { margin-top: 8px; }
+  .marker-pin {
+    background: white; width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,.25); color: var(--accent);
+    border: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="notch"></div>
+
+  <div class="nav" id="navBar">
+    <h1 id="navTitle">Today</h1>
+    <div class="small" id="navSubtitle"></div>
+  </div>
+
+  <div class="body" id="bodyEl"></div>
+
+  <div class="tabbar">
+    <div class="tab active" data-tab="today">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a8 8 0 100 16 8 8 0 000-16zm0 2v6l4 2-1 2-5-3V6h2z"/></svg>
+      Today
+    </div>
+    <div class="tab" data-tab="itinerary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
+      Itinerary
+    </div>
+    <div class="tab" data-tab="map">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4l-6 2v14l6-2 6 2 6-2V4l-6 2-6-2zM9 4v14M15 6v14"/></svg>
+      Map
+    </div>
+    <div class="tab" data-tab="browse">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      Browse
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha512-BB3hKbKWOc9Ez/TAwyWxNXeoV9c1v6FIeYiBieIWkpLjauysF18NzgR1MBNBXf8/KABdlkX68nAhlwcDFLGPCQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+// ---------- DATA (mirrors ParisCompanion/Resources/*.json) ----------
+const POIS = [
+  {
+    id: "louvre", name: "Musée du Louvre", category: "museum",
+    lat: 48.8606, lon: 2.3376,
+    address: "Rue de Rivoli, 75001 Paris",
+    neighborhood: "1er — Louvre / Tuileries",
+    rickSteves: "PLACEHOLDER — replace with Rick Steves text in Phase 5.\n\nThe Louvre is the world's largest art museum and a historic monument in Paris. Originally built as a fortress in the late 12th century, it became a royal palace before opening as a museum in 1793. Highlights include the Mona Lisa, Venus de Milo, and Winged Victory of Samothrace. Plan to enter via the Carrousel mall entrance to skip the pyramid line.",
+    practical: { hours: "Wed–Mon 9:00–18:00, closed Tue", cost: "€22, free first Sun of month Oct–Mar", duration: "Half day minimum", reservation: "Book timed entry online — strongly recommended" },
+    tags: ["must-see", "indoor", "rainy-day-ok"]
+  },
+  {
+    id: "notre-dame", name: "Notre-Dame Cathedral", category: "church",
+    lat: 48.8530, lon: 2.3499,
+    address: "6 Parvis Notre-Dame, 75004 Paris",
+    neighborhood: "4e — Île de la Cité",
+    rickSteves: "PLACEHOLDER — replace with Rick Steves text in Phase 5.\n\nNotre-Dame de Paris, the medieval Catholic cathedral on the Île de la Cité, has stood since the 12th century. After the 2019 fire, restoration is ongoing — exterior viewing is the main draw, with the reopened interior accessible by timed entry. The square in front (the parvis) is the official 'Point Zero' from which all distances in France are measured.",
+    practical: { hours: "Check current restoration schedule", cost: "Free (donations welcome)", duration: "30–60 min", reservation: "Timed entry slots may be required — check before going" },
+    tags: ["must-see", "outdoor"]
+  },
+  {
+    id: "sainte-chapelle", name: "Sainte-Chapelle", category: "church",
+    lat: 48.8554, lon: 2.3450,
+    address: "10 Bd du Palais, 75001 Paris",
+    neighborhood: "1er — Île de la Cité",
+    rickSteves: "PLACEHOLDER — replace with Rick Steves text in Phase 5.\n\nA jewel-box Gothic chapel built by Louis IX in the 1240s to house the Crown of Thorns. The upper chapel's stained glass — 15 windows depicting 1,113 biblical scenes — is among the finest medieval glass in the world. Go on a sunny day if possible. Security line shared with the Conciergerie next door can be slow; combo ticket saves time.",
+    practical: { hours: "Daily 9:00–19:00 (shorter in winter)", cost: "€13 (combo with Conciergerie €20)", duration: "45–60 min", reservation: "Book online to skip the security/ticket line" },
+    tags: ["must-see", "indoor", "rainy-day-ok"]
+  },
+  {
+    id: "eiffel-tower", name: "Eiffel Tower", category: "landmark",
+    lat: 48.8584, lon: 2.2945,
+    address: "Champ de Mars, 5 Av. Anatole France, 75007 Paris",
+    neighborhood: "7e — Champ de Mars",
+    rickSteves: "PLACEHOLDER — replace with Rick Steves text in Phase 5.\n\nBuilt for the 1889 World's Fair and originally meant to stand for only 20 years, the Eiffel Tower is now Paris's defining landmark. Three levels are open to visitors, with the summit at 276 m. Best photos are from Trocadéro across the river or from the Champ de Mars below. Hourly sparkle on the hour after dark.",
+    practical: { hours: "Daily ~9:30–23:00 (varies by season)", cost: "€11.80 stairs / €29.40 lift to top", duration: "1.5–3 hours including queue", reservation: "Book online weeks ahead — same-day tickets often sold out" },
+    tags: ["must-see", "outdoor", "evening"]
+  },
+  {
+    id: "musee-orsay", name: "Musée d'Orsay", category: "museum",
+    lat: 48.8600, lon: 2.3266,
+    address: "1 Rue de la Légion d'Honneur, 75007 Paris",
+    neighborhood: "7e — Saint-Germain",
+    rickSteves: "PLACEHOLDER — replace with Rick Steves text in Phase 5.\n\nHoused in a former Beaux-Arts railway station, the Orsay covers Western art from 1848 to 1914 — the gap between the Louvre and the Pompidou. The Impressionist galleries on the top floor (Monet, Renoir, Degas, Van Gogh) are the headline draw. The famous golden clock face overlooks the Seine. Pair with the Orangerie across the river for a complete Impressionist day.",
+    practical: { hours: "Tue–Sun 9:30–18:00 (Thu until 21:45), closed Mon", cost: "€16", duration: "2–3 hours", reservation: "Book online — line is shorter than the Louvre but still real" },
+    tags: ["must-see", "indoor", "rainy-day-ok"]
+  }
+];
+
+const ITINERARY = [
+  { date: "2026-06-15", title: "Arrival + Île de la Cité", notes: "Easy day. Beat jet lag with a long walk.",
+    stops: [
+      { poiId: "notre-dame", plannedTime: "14:00", note: "Exterior — restoration ongoing" },
+      { poiId: "sainte-chapelle", plannedTime: "15:30", note: "Pre-booked entry" }
+    ]},
+  { date: "2026-06-16", title: "Louvre Day", notes: "Get there at opening to beat the crowds.",
+    stops: [{ poiId: "louvre", plannedTime: "09:00", note: "Pyramid entrance — pre-booked" }]},
+  { date: "2026-06-17", title: "Orsay + Eiffel", notes: null,
+    stops: [
+      { poiId: "musee-orsay", plannedTime: "10:00", note: null },
+      { poiId: "eiffel-tower", plannedTime: "16:00", note: "Sunset views from Trocadéro" }
+    ]}
+];
+
+const CATEGORIES = ["museum","landmark","church","neighborhood","restaurant","viewpoint"];
+const CAT_LABEL = { museum:"Museum", landmark:"Landmark", church:"Church", neighborhood:"Neighborhood", restaurant:"Restaurant", viewpoint:"Viewpoint" };
+const CAT_ICON = {
+  museum:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21V13M15 21V13"/></svg>',
+  landmark:  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.4H22l-6.2 4.5L18.2 22 12 17.4 5.8 22l2.4-8.1L2 9.4h7.6z"/></svg>',
+  church:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M10 4h4M5 22V10l7-4 7 4v12M9 22v-6h6v6"/></svg>',
+  neighborhood:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 4l-6 2v14l6-2 6 2 6-2V4l-6 2-6-2z"/></svg>',
+  restaurant:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 2v20M11 2v6a4 4 0 01-4 4M17 2c-2 0-3 2-3 5s1 5 3 5v10"/></svg>',
+  viewpoint: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="12" r="3"/><circle cx="17" cy="12" r="3"/><path d="M10 12h4"/></svg>'
+};
+const ICON = {
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 6l-6 6 6 6"/></svg>',
+  heart_filled:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C.6 8 3 4 7 4c2 0 3.5 1 5 3 1.5-2 3-3 5-3 4 0 6.4 4 4.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg>',
+  heart:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.6 8 3 4 7 4c2 0 3.5 1 5 3 1.5-2 3-3 5-3 4 0 6.4 4 4.5 8-2.5 4.5-9.5 9-9.5 9z"/></svg>',
+  check_filled:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6" fill="none" stroke="white" stroke-width="2.2"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-6"/></svg>',
+  walk:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="13" cy="4" r="2"/><path d="M11 7l-2 5 3 2v6h2v-7l-2-1 1-3 2 3h3v-2h-2l-2-3-3 0z"/></svg>',
+  info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8h.01M11 12h1v5h1"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+  euro:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8a4 4 0 100 8M7 11h7M7 14h7"/></svg>',
+  hourglass:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12M6 22h12M8 2v4l4 4-4 4v4M16 2v4l-4 4 4 4v4"/></svg>',
+  ticket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9a2 2 0 002-2V5h14v2a2 2 0 002 2v6a2 2 0 00-2 2v2H5v-2a2 2 0 00-2-2V9z"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg>',
+  airplane:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 00-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1L15 22v-1.5L13 19v-5.5z"/></svg>'
+};
+const POIS_BY_ID = Object.fromEntries(POIS.map(p => [p.id, p]));
+
+// ---------- STATE ----------
+const state = {
+  tab: "today",
+  selectedPOI: null,
+  search: "",
+  filters: new Set(CATEGORIES),
+  collapsed: new Set(),
+  fav: new Set(JSON.parse(localStorage.getItem("paris.fav") || "[]")),
+  vis: new Set(JSON.parse(localStorage.getItem("paris.vis") || "[]")),
+};
+function saveStatus() {
+  localStorage.setItem("paris.fav", JSON.stringify([...state.fav]));
+  localStorage.setItem("paris.vis", JSON.stringify([...state.vis]));
+}
+
+// ---------- HELPERS ----------
+const todayInParis = () => {
+  // Force Europe/Paris date
+  const fmt = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris", year: "numeric", month: "2-digit", day: "2-digit" });
+  return fmt.format(new Date());
+};
+const longDate = () => new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Paris", weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(new Date());
+const dayLabel = (iso) => {
+  const d = new Date(iso + "T00:00:00");
+  return new Intl.DateTimeFormat("en-US", { weekday: "long", month: "short", day: "numeric" }).format(d);
+};
+const daysUntil = (iso) => {
+  const today = new Date(todayInParis() + "T00:00:00");
+  const target = new Date(iso + "T00:00:00");
+  return Math.max(1, Math.round((target - today) / 86400000));
+};
+const escapeHtml = (s) => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+// ---------- RENDERERS ----------
+function setTitle(title, subtitle = "") {
+  document.getElementById("navTitle").textContent = title;
+  document.getElementById("navSubtitle").textContent = subtitle;
+}
+
+function render() {
+  const body = document.getElementById("bodyEl");
+  // Tear down any existing leaflet
+  if (window._leafletMap) { window._leafletMap.remove(); window._leafletMap = null; }
+  if (window._miniMap)    { window._miniMap.remove(); window._miniMap = null; }
+
+  // Tab styling
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t.dataset.tab === state.tab));
+
+  if (state.selectedPOI) { renderDetail(body); return; }
+
+  switch (state.tab) {
+    case "today":     renderToday(body); break;
+    case "itinerary": renderItinerary(body); break;
+    case "map":       renderMap(body); break;
+    case "browse":    renderBrowse(body); break;
+  }
+}
+
+function renderToday(el) {
+  setTitle("Today");
+  const today = todayInParis();
+  const day = ITINERARY.find(d => d.date === today);
+  const next = ITINERARY.find(d => d.date > today);
+  const last = ITINERARY[ITINERARY.length - 1];
+
+  if (day) {
+    el.innerHTML = `<div class="small" style="color:var(--muted);font-size:13px;margin-bottom:12px;">${longDate()}</div>` + renderDayCard(day);
+    wireStops(el);
+  } else if (next) {
+    el.innerHTML = `
+      <div class="header-pre">
+        ${ICON.airplane}
+        <h2>Trip starts in ${daysUntil(next.date)} day${daysUntil(next.date) === 1 ? "" : "s"}</h2>
+        <p>First up: ${escapeHtml(next.title)}</p>
+        <p style="margin-top:4px;font-size:13px;">${dayLabel(next.date)}</p>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Preview</div>
+        ${renderDayCardInner(next)}
+      </div>`;
+    wireStops(el);
+  } else if (last && last.date < today) {
+    el.innerHTML = `<div class="header-pre"><h2>Trip complete</h2><p>Last day: ${escapeHtml(last.title)}</p></div>`;
+  } else {
+    el.innerHTML = `<div class="empty"><h2>No itinerary loaded</h2></div>`;
+  }
+}
+
+function renderDayCard(day) {
+  return `<div class="card">${renderDayCardInner(day)}</div>`;
+}
+function renderDayCardInner(day) {
+  return `
+    <h3 style="margin:0 0 4px;">${escapeHtml(day.title)}</h3>
+    ${day.notes ? `<div style="color:var(--muted);font-size:14px;margin-bottom:8px;">${escapeHtml(day.notes)}</div>` : ""}
+    ${day.stops.map(stop => {
+      const poi = POIS_BY_ID[stop.poiId];
+      if (!poi) return `<div style="color:var(--pink);font-size:12px;">Missing POI: ${stop.poiId}</div>`;
+      return `<div class="stop" data-poi="${poi.id}">
+        <div class="time">${stop.plannedTime || "—"}</div>
+        <div class="body-text">
+          <h4>${escapeHtml(poi.name)}</h4>
+          <div class="sub">${escapeHtml(poi.neighborhood)}</div>
+          ${stop.note ? `<div class="note">${escapeHtml(stop.note)}</div>` : ""}
+        </div>
+        <div class="chev">${ICON.chev}</div>
+      </div>`;
+    }).join("")}`;
+}
+
+function renderItinerary(el) {
+  setTitle("Itinerary");
+  el.innerHTML = ITINERARY.map(day => {
+    const open = !state.collapsed.has(day.id || day.date);
+    return `<div class="card disclosure ${open ? "open" : ""}" data-day="${day.date}">
+      <div class="disclosure-head">
+        <div>
+          <div style="font-size:13px;color:var(--muted);">${dayLabel(day.date)}</div>
+          <h3 style="margin:2px 0 0;">${escapeHtml(day.title)}</h3>
+        </div>
+        <div class="arrow">${ICON.chev}</div>
+      </div>
+      <div class="disclosure-body">
+        ${day.notes ? `<div style="color:var(--muted);font-size:14px;margin-top:8px;">${escapeHtml(day.notes)}</div>` : ""}
+        ${day.stops.map(stop => {
+          const poi = POIS_BY_ID[stop.poiId]; if (!poi) return "";
+          return `<div class="stop" data-poi="${poi.id}">
+            <div class="time">${stop.plannedTime || "—"}</div>
+            <div class="body-text">
+              <h4>${escapeHtml(poi.name)}</h4>
+              <div class="sub">${escapeHtml(poi.neighborhood)}</div>
+              ${stop.note ? `<div class="note">${escapeHtml(stop.note)}</div>` : ""}
+            </div>
+            <div class="chev">${ICON.chev}</div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>`;
+  }).join("");
+
+  el.querySelectorAll(".disclosure-head").forEach(head => {
+    head.addEventListener("click", () => {
+      const card = head.closest(".disclosure");
+      const date = card.dataset.day;
+      if (state.collapsed.has(date)) state.collapsed.delete(date); else state.collapsed.add(date);
+      card.classList.toggle("open");
+    });
+  });
+  wireStops(el);
+}
+
+function renderMap(el) {
+  setTitle("Map");
+  el.style.padding = "0";
+  el.innerHTML = `
+    <div style="padding: 12px 16px 8px; background: rgba(242,242,247,.85); backdrop-filter: blur(12px);">
+      <div class="filter-bar">
+        ${CATEGORIES.map(cat => `<button class="chip ${state.filters.has(cat) ? "on" : ""}" data-cat="${cat}">
+          ${CAT_ICON[cat]} ${CAT_LABEL[cat]}
+        </button>`).join("")}
+      </div>
+    </div>
+    <div id="leafletMap"></div>`;
+
+  el.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const cat = chip.dataset.cat;
+      if (state.filters.has(cat)) state.filters.delete(cat); else state.filters.add(cat);
+      chip.classList.toggle("on");
+      drawMarkers();
+    });
+  });
+
+  const map = L.map("leafletMap", { zoomControl: true }).setView([48.8566, 2.3522], 13);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: "© OpenStreetMap"
+  }).addTo(map);
+  window._leafletMap = map;
+  window._markers = [];
+  drawMarkers();
+}
+
+function drawMarkers() {
+  if (!window._leafletMap) return;
+  (window._markers || []).forEach(m => window._leafletMap.removeLayer(m));
+  window._markers = [];
+  POIS.filter(p => state.filters.has(p.category)).forEach(poi => {
+    const html = `<div class="marker-pin">${CAT_ICON[poi.category]}</div>`;
+    const icon = L.divIcon({ html, className: "", iconSize: [34,34], iconAnchor: [17,17] });
+    const m = L.marker([poi.lat, poi.lon], { icon }).addTo(window._leafletMap);
+    m.bindPopup(`
+      <strong>${escapeHtml(poi.name)}</strong><br>
+      <span style="color:#777;font-size:12px;">${escapeHtml(poi.neighborhood)}</span><br>
+      <button class="btn btn-bordered" onclick="openPOI('${poi.id}')" style="margin-top:8px;">Open Detail</button>
+    `);
+    window._markers.push(m);
+  });
+}
+
+function renderBrowse(el) {
+  setTitle("Browse");
+  el.style.padding = "16px";
+  const search = state.search.toLowerCase();
+  const filtered = POIS.filter(p =>
+    !search || p.name.toLowerCase().includes(search) || p.neighborhood.toLowerCase().includes(search)
+  );
+  const groups = {};
+  filtered.forEach(p => { (groups[p.neighborhood] ||= []).push(p); });
+  const orderedKeys = Object.keys(groups).sort();
+
+  el.innerHTML = `
+    <input class="search" placeholder="Search Paris" value="${escapeHtml(state.search)}" id="searchInput">
+    ${orderedKeys.map(nb => `
+      <div class="section-title">${escapeHtml(nb)}</div>
+      <div class="section-list">
+        ${groups[nb].map(p => `
+          <div class="row" data-poi="${p.id}">
+            <div class="icon">${CAT_ICON[p.category]}</div>
+            <div class="name">
+              <h4>${escapeHtml(p.name)}</h4>
+              <div class="cat">${CAT_LABEL[p.category]}</div>
+            </div>
+            <div class="indicators">
+              ${state.fav.has(p.id) ? `<span class="heart">${ICON.heart_filled}</span>` : ""}
+              ${state.vis.has(p.id) ? `<span class="check">${ICON.check_filled}</span>` : ""}
+            </div>
+          </div>`).join("")}
+      </div>
+    `).join("")}`;
+  document.getElementById("searchInput").addEventListener("input", e => {
+    state.search = e.target.value;
+    renderBrowse(el);
+  });
+  wireStops(el);
+}
+
+function renderDetail(el) {
+  const poi = POIS_BY_ID[state.selectedPOI];
+  if (!poi) { state.selectedPOI = null; render(); return; }
+  setTitle(poi.name);
+  const isFav = state.fav.has(poi.id);
+  const isVis = state.vis.has(poi.id);
+  const rsHtml = poi.rickSteves.split(/\n\n+/).map(p => `<p>${escapeHtml(p).replace(/\n/g, "<br>")}</p>`).join("");
+  el.style.padding = "16px";
+  el.innerHTML = `
+    <button class="back" id="backBtn">${ICON.back}<span>Back</span></button>
+    <div class="hero" style="margin-top:8px;">${CAT_ICON[poi.category]}</div>
+    <h2 style="margin:0;">${escapeHtml(poi.name)}</h2>
+    <div style="color:var(--muted);font-size:14px;margin:4px 0 12px;">${CAT_LABEL[poi.category]} · ${escapeHtml(poi.neighborhood)}</div>
+
+    <div class="toggles">
+      <button class="btn btn-bordered ${isFav ? "fav-on" : ""}" id="favBtn">
+        ${isFav ? ICON.heart_filled : ICON.heart}
+        <span>${isFav ? "Favorited" : "Favorite"}</span>
+      </button>
+      <button class="btn btn-bordered ${isVis ? "vis-on" : ""}" id="visBtn">
+        ${isVis ? ICON.check_filled : ICON.check}
+        <span>${isVis ? "Visited" : "Mark visited"}</span>
+      </button>
+    </div>
+
+    <div class="practical">
+      ${row(ICON.clock, "Hours", poi.practical.hours)}
+      ${row(ICON.euro, "Cost", poi.practical.cost)}
+      ${row(ICON.hourglass, "Duration", poi.practical.duration)}
+      ${row(ICON.ticket, "Reservation", poi.practical.reservation)}
+    </div>
+
+    <a class="btn btn-primary" style="margin:14px 0;text-decoration:none;"
+       href="https://www.google.com/maps/dir/?api=1&destination=${poi.lat},${poi.lon}&travelmode=walking" target="_blank" rel="noopener">
+       ${ICON.walk} <span>Walking directions in Google Maps</span>
+    </a>
+
+    <div class="rs"><h3>Rick Steves</h3>${rsHtml}</div>
+    <div class="mini-map" id="miniMap"></div>
+    <div style="font-size:12px;color:var(--muted);">${escapeHtml(poi.address)}</div>`;
+
+  document.getElementById("backBtn").addEventListener("click", () => { state.selectedPOI = null; render(); });
+  document.getElementById("favBtn").addEventListener("click", () => {
+    state.fav.has(poi.id) ? state.fav.delete(poi.id) : state.fav.add(poi.id);
+    saveStatus(); render();
+  });
+  document.getElementById("visBtn").addEventListener("click", () => {
+    state.vis.has(poi.id) ? state.vis.delete(poi.id) : state.vis.add(poi.id);
+    saveStatus(); render();
+  });
+
+  // Mini-map
+  setTimeout(() => {
+    const m = L.map("miniMap", { zoomControl: false, dragging: false, scrollWheelZoom: false }).setView([poi.lat, poi.lon], 15);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OSM" }).addTo(m);
+    L.marker([poi.lat, poi.lon]).addTo(m);
+    window._miniMap = m;
+  }, 0);
+}
+function row(icon, label, value) {
+  if (!value) return "";
+  return `<div class="pr">${icon}<div><div class="pr-label">${label}</div><div class="pr-value">${escapeHtml(value)}</div></div></div>`;
+}
+
+function wireStops(scope) {
+  scope.querySelectorAll("[data-poi]").forEach(el => {
+    el.addEventListener("click", () => openPOI(el.dataset.poi));
+  });
+}
+window.openPOI = (id) => { state.selectedPOI = id; document.getElementById("bodyEl").style.padding = "16px"; render(); };
+
+// ---------- TABS ----------
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    state.tab = t.dataset.tab;
+    state.selectedPOI = null;
+    state.search = "";
+    document.getElementById("bodyEl").style.padding = "16px";
+    render();
+  });
+});
+
+render();
+</script>
+</body>
+</html>
