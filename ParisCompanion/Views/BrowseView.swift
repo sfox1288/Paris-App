@@ -1,8 +1,13 @@
 import SwiftUI
+import SwiftData
 
 struct BrowseView: View {
     @Environment(ContentStore.self) private var content
+    @Query private var statuses: [POIStatus]
     @State private var search: String = ""
+
+    private var favorites: Set<String> { Set(statuses.filter(\.isFavorite).map(\.poiId)) }
+    private var visited: Set<String> { Set(statuses.filter(\.isVisited).map(\.poiId)) }
 
     private var grouped: [(String, [POI])] {
         let filtered = content.pois.filter { poi in
@@ -25,7 +30,11 @@ struct BrowseView: View {
                 ForEach(grouped, id: \.0) { neighborhood, pois in
                     Section(neighborhood) {
                         ForEach(pois) { poi in
-                            POIRow(poi: poi)
+                            POIRow(
+                                poi: poi,
+                                isFavorite: favorites.contains(poi.id),
+                                isVisited: visited.contains(poi.id)
+                            )
                         }
                     }
                 }

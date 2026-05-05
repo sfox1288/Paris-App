@@ -2,6 +2,8 @@ import SwiftUI
 
 struct POIRow: View {
     let poi: POI
+    var isFavorite: Bool = false
+    var isVisited: Bool = false
 
     var body: some View {
         NavigationLink(value: poi) {
@@ -14,6 +16,13 @@ struct POIRow: View {
                     Text(poi.category.displayName)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+                Spacer(minLength: 8)
+                if isFavorite {
+                    Image(systemName: "heart.fill").foregroundStyle(.pink)
+                }
+                if isVisited {
+                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
                 }
             }
         }
