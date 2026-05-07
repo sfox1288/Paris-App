@@ -58,12 +58,15 @@ ParisCompanion/
 
 ## Editing content
 
-- **POIs:** edit `ParisCompanion/Resources/pois.json`. Each entry needs an `id`, `name`,
-  `category` (one of `museum | landmark | church | neighborhood | restaurant | viewpoint`),
-  `lat`/`lon`, and the rest of the fields shown in the existing entries. Itinerary stops
-  reference POIs by `id`.
-- **Itinerary:** edit `ParisCompanion/Resources/itinerary.json`. Dates are ISO `yyyy-MM-dd`,
-  Europe/Paris timezone. Trip dates currently start **2026-06-15** — change to taste.
+- **POIs:** the canonical workflow is to keep a CSV + per-POI Markdown directory
+  and regenerate `pois.json` with `python3 scripts/build_content.py <input_dir>`.
+  Sample inputs live in `scripts/sample_content/`. See `scripts/README.md` for
+  the CSV column reference.
+- **Itinerary:** hand-edit `ParisCompanion/Resources/itinerary.json`. Dates are
+  ISO `yyyy-MM-dd`, Europe/Paris timezone. Trip dates currently start **2026-06-15**
+  — change to taste. Itinerary stops reference POIs by `id`.
+- **Lint before committing:** `python3 scripts/verify_content.py` catches missing
+  POI ids and duplicate slugs.
 - No rebuild step beyond Xcode Run; JSON ships as a bundle resource.
 
 ## Trip dates
