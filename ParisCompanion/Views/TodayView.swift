@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 struct TodayView: View {
     @Environment(ContentStore.self) private var content
@@ -95,7 +96,13 @@ struct TodayView: View {
 
 struct DayCard: View {
     @Environment(ContentStore.self) private var content
+    @Query(filter: #Predicate<POIStatus> { $0.isVisited }) private var visitedStatuses: [POIStatus]
     let day: ItineraryDay
+
+    private var visitedCount: Int {
+        let visitedIds = Set(visitedStatuses.map(\.poiId))
+        return day.stops.filter { visitedIds.contains($0.poiId) }.count
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -103,6 +110,13 @@ struct DayCard: View {
                 Text(day.title).font(.title2).bold()
                 if let notes = day.notes, !notes.isEmpty {
                     Text(notes).font(.callout).foregroundStyle(.secondary)
+                }
+                if !day.stops.isEmpty {
+                    Label("\(visitedCount) of \(day.stops.count) visited",
+                          systemImage: visitedCount == day.stops.count ? "checkmark.circle.fill" : "circle.dashed")
+                        .font(.caption)
+                        .foregroundStyle(visitedCount == day.stops.count ? .green : .secondary)
+                        .padding(.top, 2)
                 }
             }
             ForEach(day.stops) { stop in

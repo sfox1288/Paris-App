@@ -23,6 +23,8 @@ struct RootTabView: View {
                 .tabItem { Label("Itinerary", systemImage: "calendar") }
             MapView()
                 .tabItem { Label("Map", systemImage: "map") }
+            FavoritesView()
+                .tabItem { Label("Favorites", systemImage: "heart") }
             BrowseView()
                 .tabItem { Label("Browse", systemImage: "list.bullet") }
         }
