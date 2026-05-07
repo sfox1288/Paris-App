@@ -19,6 +19,8 @@ struct DirectionsButton: View {
         }
         .buttonStyle(.borderedProminent)
         .controlSize(.large)
+        .accessibilityLabel(label)
+        .accessibilityHint("Opens Google Maps with walking directions")
     }
 
     private func openDirections() {

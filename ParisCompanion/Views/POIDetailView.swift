@@ -75,6 +75,7 @@ struct POIDetailView: View {
             }
             .buttonStyle(.bordered)
             .tint(isFavorite ? .pink : .secondary)
+            .accessibilityLabel(isFavorite ? "Remove from favorites" : "Add to favorites")
 
             Button { toggle(\.isVisited) } label: {
                 Label(isVisited ? "Visited" : "Mark visited",
@@ -83,6 +84,7 @@ struct POIDetailView: View {
             }
             .buttonStyle(.bordered)
             .tint(isVisited ? .green : .secondary)
+            .accessibilityLabel(isVisited ? "Mark as not visited" : "Mark as visited")
         }
     }
 

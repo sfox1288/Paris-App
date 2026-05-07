@@ -62,6 +62,10 @@ private struct DayDisclosure: View {
                             StopRow(stop: stop, poi: poi)
                         }
                         .buttonStyle(.plain)
+                    } else {
+                        Label("Missing POI: \(stop.poiId)", systemImage: "exclamationmark.triangle")
+                            .font(.caption)
+                            .foregroundStyle(.red)
                     }
                 }
             }

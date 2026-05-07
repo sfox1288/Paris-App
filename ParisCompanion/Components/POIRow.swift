@@ -19,12 +19,17 @@ struct POIRow: View {
                 }
                 Spacer(minLength: 8)
                 if isFavorite {
-                    Image(systemName: "heart.fill").foregroundStyle(.pink)
+                    Image(systemName: "heart.fill")
+                        .foregroundStyle(.pink)
+                        .accessibilityLabel("Favorited")
                 }
                 if isVisited {
-                    Image(systemName: "checkmark.circle.fill").foregroundStyle(.green)
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                        .accessibilityLabel("Visited")
                 }
             }
+            .accessibilityElement(children: .combine)
         }
     }
 }

@@ -77,6 +77,9 @@ private struct CategoryFilterBar: View {
                             .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(cat.displayName)
+                    .accessibilityValue(on ? "showing" : "hidden")
+                    .accessibilityHint("Toggles \(cat.displayName.lowercased()) pins")
                 }
             }
             .padding(.horizontal, 12)

@@ -52,9 +52,10 @@ ParisCompanion/
 - [x] **Phase 1 — Skeleton + data.** Project scaffold, models, ContentStore loads 5 hand-coded POIs, Browse list confirms load.
 - [x] **Phase 2 — POI Detail.** Practical info box, Markdown-rendered Rick Steves text, Google Maps directions button, favorite/visited toggle.
 - [x] **Phase 3 — Map + Browse.** MapKit pin view with category filter and tap-to-sheet.
-- [x] **Phase 4 — Itinerary.** Today view with date logic; full itinerary with expandable days. ← **you are here**
-- [ ] **Phase 5 — Real content.** Replace the 5 placeholder POIs with the full set; ingest Rick Steves text.
-- [ ] **Phase 6 — Polish + TestFlight.** App icon, launch screen, device test in airplane mode, upload to TestFlight.
+- [x] **Phase 4 — Itinerary.** Today view with date logic; full itinerary with expandable days.
+- [~] **Phase 5 — Real content.** Pipeline ready (`scripts/build_content.py`); placeholder content in place; awaiting real Rick Steves source material.
+- [~] **Phase 6 — Polish + TestFlight.** Placeholder icon, accent color, launch screen, accessibility labels, error states all done. ← **you are here.** TestFlight upload is the last step (needs your Mac + Apple Developer account).
+- [x] **Bonus.** Favorites tab, Today progress indicator, Near-me sort on Browse, content linter.
 
 ## Editing content
 
