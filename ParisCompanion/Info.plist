@@ -41,5 +41,7 @@
     <array>
         <string>comgooglemaps</string>
     </array>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Used to sort places by distance from you when you pick "Near me" on the Browse tab.</string>
 </dict>
 </plist>
